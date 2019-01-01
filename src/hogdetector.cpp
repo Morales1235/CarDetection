@@ -54,6 +54,7 @@ auto HOGDetector::GetDetector()
         detector[sv.cols] = (float)-rho;
         return detector;
     }
+    return std::vector<float>{};
 }
 
 void HOGDetector::Train(PairOf<std::string>&& trainDataDirNames, bool flipSamples)
