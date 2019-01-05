@@ -134,7 +134,7 @@ void HOGDetector::loadImages(const std::string & dirName, std::vector<cv::Mat> &
     }
 }
 
-void HOGDetector::computeHOGs(const std::vector<cv::Mat> & images, std::vector<cv::Mat> & gradients, bool useFlip)
+void HOGDetector::computeHOGs(const std::vector<cv::Mat>& images, std::vector<cv::Mat>& gradients, bool useFlip)
 {
     if(images.empty())
     {
@@ -216,6 +216,7 @@ void HOGDetector::Detect(cv::Mat &image, bool display)
     std::vector<double> weights;
     cv::Rect det;
     double weight;
+    double threshold = 0.8;
     int shift = image.rows/2;
     auto roi{image.rowRange(shift, image.rows)};
     if(display)
@@ -223,7 +224,7 @@ void HOGDetector::Detect(cv::Mat &image, bool display)
 
     mHOGd.detectMultiScale(roi, detections, weights);
     BOOST_FOREACH(boost::tie(det, weight), boost::combine(detections, weights))
-        if(weight > 0.8)
+        if(weight > threshold)
         {
             det.y += shift;
             cv::rectangle(image, det, {255, 0, 0});
