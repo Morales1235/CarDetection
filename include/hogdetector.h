@@ -33,6 +33,7 @@ public:
     void TestSavedDetector(std::string detectorFilename, std::string testDir, bool show = true, bool save = false);
     void Test(std::string testDir, bool show = true, bool save = false);
     void Save(std::string destFile);
+    void SetDefaultPeopleDetector();
 
 private:
     auto GetDetector();

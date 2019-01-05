@@ -254,6 +254,12 @@ void HOGDetector::Save(std::string destFile)
     mHOGd.save(destFile);
 }
 
+void HOGDetector::SetDefaultPeopleDetector()
+{
+    mHOGd.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
+    mIsTrained = true;
+}
+
 void HOGDetector::TestSavedDetector(std::string detectorFilename, std::string testDir, bool show, bool save)
 {
     mIsTrained = mHOGd.load(detectorFilename);
