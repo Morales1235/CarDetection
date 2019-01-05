@@ -30,7 +30,7 @@ class HOGDetector
 public:
     HOGDetector(SVMParams params = SVMParams());
     void Train(PairOf<std::string>&& trainDataDirNames, bool flipSamples);
-    void TestFromFile(std::string detectorFilename, std::string testDir, bool show = true, bool save = false);
+    void TestSavedDetector(std::string detectorFilename, std::string testDir, bool show = true, bool save = false);
     void Test(std::string testDir, bool show = true, bool save = false);
     void Save(std::string destFile);
 

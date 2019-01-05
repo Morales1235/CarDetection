@@ -38,7 +38,7 @@ auto HOGDetector::loadImages(PairOf<std::string> &&dirNames)
 auto HOGDetector::GetDetector()
 {
     assert(mSVM);
-    if(mSVM)
+    if(mSVM && mSVM->isTrained())
     {
         cv::Mat sv = mSVM->getSupportVectors();
         cv::Mat alpha, svidx;
@@ -142,8 +142,6 @@ void HOGDetector::computeHOGs(const std::vector<cv::Mat> & images, std::vector<c
         return;
     }
     auto wsize = images.front().size();
-    cv::HOGDescriptor hog;
-    hog.winSize = wsize;
     cv::Mat gray;
     std::vector<float> descriptors;
 
@@ -152,12 +150,12 @@ void HOGDetector::computeHOGs(const std::vector<cv::Mat> & images, std::vector<c
         if (image.cols>= wsize.width && image.rows >= wsize.height)
         {
             cvtColor(image, gray, cv::COLOR_BGR2GRAY);
-            hog.compute(gray, descriptors, cv::Size(8, 8), cv::Size(0, 0));
+            mHOGd.compute(gray, descriptors, cv::Size(8, 8), cv::Size(0, 0));
             gradients.push_back(cv::Mat(descriptors).clone());
             if (useFlip)
             {
                 cv::flip(gray, gray, 1);
-                hog.compute(gray, descriptors, cv::Size(8, 8), cv::Size(0, 0));
+                mHOGd.compute(gray, descriptors, cv::Size(8, 8), cv::Size(0, 0));
                 gradients.push_back(cv::Mat(descriptors).clone());
             }
         }
@@ -256,7 +254,7 @@ void HOGDetector::Save(std::string destFile)
     mHOGd.save(destFile);
 }
 
-void HOGDetector::TestFromFile(std::string detectorFilename, std::string testDir, bool show, bool save)
+void HOGDetector::TestSavedDetector(std::string detectorFilename, std::string testDir, bool show, bool save)
 {
     mIsTrained = mHOGd.load(detectorFilename);
     Test(testDir, show, save);
