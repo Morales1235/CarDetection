@@ -67,8 +67,6 @@ void HOGDetector::Train(PairOf<std::string>&& trainDataDirNames, bool flipSample
 
     auto [positiveImages, negativeImages] = loadImages(std::make_pair(positivesDir, negativesDir));
 
-    if(!checkImgDimensions(std::make_pair(positiveImages, negativeImages)))
-        exit(1);
     labels.assign(positiveImages.size() * (flipSamples ? 2 : 1), +1);
     labels.insert(labels.end(), negativeImages.size() * (flipSamples ? 2 : 1), -1);
 
@@ -164,24 +162,6 @@ void HOGDetector::computeHOGs(const std::vector<cv::Mat> & images, std::vector<c
             }
         }
     }
-}
-
-bool HOGDetector::checkImgDimensions(PairOf<std::vector<cv::Mat> >&& images)
-{
-    const auto& positives = images.first;
-    const auto& negatives = images.second;
-    if(positives.empty() || negatives.empty())
-        return false;
-
-    const auto expectedSize = positives[0].size();
-    for(const auto& img: positives)
-        if(img.size() != expectedSize)
-            return false;
-    for(const auto& img: negatives)
-        if(img.size() != expectedSize)
-            return false;
-
-    return true;
 }
 
 void HOGDetector::testVideo(std::string videoName, bool show, bool save)
