@@ -44,7 +44,7 @@ private:
     bool checkImgDimensions(PairOf<std::vector<cv::Mat>>&& images);
     void testVideo(std::string videoName, bool show = true, bool save = false);
     void testImages(std::string dirName, bool show = true, bool save = false);
-    void Detect(cv::Mat& image, bool display = true, int delay = 0);
+    void Detect(cv::Mat& image, bool display = true);
 
     cv::Ptr<cv::ml::SVM> mSVM;
     cv::HOGDescriptor mHOGd;

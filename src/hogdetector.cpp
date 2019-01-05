@@ -180,7 +180,7 @@ void HOGDetector::testVideo(std::string videoName, bool show, bool save)
         vid >> frame;
         std::cout << "Wroking on frame: " << cnt++ << std::endl;
         if(frame.data)
-            Detect(frame, show, 1);
+            Detect(frame, show);
         else
             break;
         if(save)
@@ -208,7 +208,7 @@ void HOGDetector::testImages(std::string dirName, bool show, bool save)
     }
 }
 
-void HOGDetector::Detect(cv::Mat &image, bool display, int delay)
+void HOGDetector::Detect(cv::Mat &image, bool display)
 {
     if(!image.data)
         return;
@@ -231,7 +231,7 @@ void HOGDetector::Detect(cv::Mat &image, bool display, int delay)
     if(display)
     {
         cv::imshow("Testing", image);
-        cv::waitKey(delay);
+        cv::waitKey(0);
     }
 }
 
