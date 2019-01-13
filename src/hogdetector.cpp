@@ -217,7 +217,7 @@ void HOGDetector::Detect(cv::Mat &image, bool display)
     cv::Rect det;
     double weight;
     double threshold = 0.8;
-    int shift = image.rows/2;
+    int shift = 0; //image.rows/4;
     auto roi{image.rowRange(shift, image.rows)};
     if(display)
         cv::namedWindow("Testing", cv::WINDOW_NORMAL);
@@ -253,6 +253,11 @@ void HOGDetector::Test(std::string testDir, bool show, bool save)
 void HOGDetector::Save(std::string destFile)
 {
     mHOGd.save(destFile);
+}
+
+void HOGDetector::Load(std::string filepath)
+{
+    mIsTrained = mHOGd.load(filepath);
 }
 
 void HOGDetector::SetDefaultPeopleDetector()
