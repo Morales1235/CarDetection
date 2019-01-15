@@ -9,6 +9,8 @@
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/indexed.hpp>
 
+#include <array>
+
 HOGDetector::HOGDetector(SVMParams params)
 {
     mSVM = cv::ml::SVM::create();
@@ -21,7 +23,18 @@ HOGDetector::HOGDetector(SVMParams params)
     mSVM->setP(params.P);
     mSVM->setC(params.C);
     mSVM->setType(params.type);
+
+    mMyColor = ++currentColor;
 }
+
+const std::array<cv::Scalar, COLOR_COUNT> HOGDetector::colors =
+{{
+    {255, 255, 255},
+    {0, 0, 255},
+    {255, 0, 0}
+}};
+
+int HOGDetector::currentColor = 0;
 
 auto HOGDetector::loadImages(PairOf<std::string> &&dirNames)
 {
@@ -145,6 +158,7 @@ void HOGDetector::computeHOGs(const std::vector<cv::Mat>& images, std::vector<cv
     cv::Mat gray;
     std::vector<float> descriptors;
 
+    mHOGd.winSize = wsize;
     for(const auto& image: images)
     {
         if (image.cols>= wsize.width && image.rows >= wsize.height)
@@ -227,7 +241,7 @@ void HOGDetector::Detect(cv::Mat &image, bool display)
         if(weight > threshold)
         {
             det.y += shift;
-            cv::rectangle(image, det, {255, 0, 0});
+            cv::rectangle(image, det, colors[mMyColor]);
         }
     if(display)
     {
@@ -255,9 +269,10 @@ void HOGDetector::Save(std::string destFile)
     mHOGd.save(destFile);
 }
 
-void HOGDetector::Load(std::string filepath)
+bool HOGDetector::Load(std::string filepath)
 {
     mIsTrained = mHOGd.load(filepath);
+    return mIsTrained;
 }
 
 void HOGDetector::SetDefaultPeopleDetector()

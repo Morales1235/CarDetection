@@ -25,6 +25,15 @@ struct SVMParams
     SVM::Types type{SVM::C_SVC};
 };
 
+constexpr auto COLOR_START_LINE = __LINE__;
+enum class Color
+{
+    white = 0,
+    blue,
+    red
+};
+constexpr auto COLOR_COUNT = __LINE__ - COLOR_START_LINE - 4;
+
 class HOGDetector
 {
 public:
@@ -33,8 +42,9 @@ public:
     void TestSavedDetector(std::string detectorFilename, std::string testDir, bool show = true, bool save = false);
     void Test(std::string testDir, bool show = true, bool save = false);
     void Save(std::string destFile);
-    void Load(std::string filepath);
+    bool Load(std::string filepath);
     void SetDefaultPeopleDetector();
+    void Detect(cv::Mat& image, bool display = true);
 
 private:
     auto GetDetector();
@@ -45,11 +55,13 @@ private:
     bool checkImgDimensions(PairOf<std::vector<cv::Mat>>&& images);
     void testVideo(std::string videoName, bool show = true, bool save = false);
     void testImages(std::string dirName, bool show = true, bool save = false);
-    void Detect(cv::Mat& image, bool display = true);
 
     cv::Ptr<cv::ml::SVM> mSVM;
     cv::HOGDescriptor mHOGd;
     bool mIsTrained{false};
+    static int currentColor;
+    int mMyColor;
+    static const std::array<cv::Scalar, COLOR_COUNT> colors;
 };
 
 #endif // HOGDETECTOR_H
