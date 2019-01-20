@@ -10,6 +10,12 @@
 template<class T>
 using PairOf = std::pair<T, T>;
 
+namespace cv
+{
+    class VideoWriter;
+    class VideoCapture;
+}
+
 struct SVMParams
 {
     using SVM = cv::ml::SVM;
@@ -55,6 +61,7 @@ private:
     bool checkImgDimensions(PairOf<std::vector<cv::Mat>>&& images);
     void testVideo(std::string videoName, bool show = true, bool save = false);
     void testImages(std::string dirName, bool show = true, bool save = false);
+    cv::VideoWriter GetVideoWriter(cv::VideoCapture& video);
 
     cv::Ptr<cv::ml::SVM> mSVM;
     cv::HOGDescriptor mHOGd;

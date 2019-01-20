@@ -41,10 +41,10 @@ auto HOGDetector::loadImages(PairOf<std::string> &&dirNames)
     std::vector<cv::Mat> positives, negatives;
     auto positivesDir = dirNames.first;
     auto negativesDir = dirNames.second;
-    std::clog << "Loading images...";
+
     loadImages(positivesDir, positives);
     loadImages(negativesDir, negatives);
-    std::clog << "OK\n";
+
     return std::make_pair(positives, negatives);
 }
 
@@ -75,10 +75,10 @@ void HOGDetector::Train(PairOf<std::string>&& trainDataDirNames, bool flipSample
     std::vector<cv::Mat> gradients;
     std::vector<int> labels;
     cv::Mat trainData;
-    auto positivesDir = trainDataDirNames.first;
-    auto negativesDir = trainDataDirNames.second;
 
-    auto [positiveImages, negativeImages] = loadImages(std::make_pair(positivesDir, negativesDir));
+    std::clog << "Loading images...";
+    auto [positiveImages, negativeImages] = loadImages(std::move(trainDataDirNames));
+    std::clog << "OK\n";
 
     labels.assign(positiveImages.size() * (flipSamples ? 2 : 1), +1);
     labels.insert(labels.end(), negativeImages.size() * (flipSamples ? 2 : 1), -1);
@@ -176,23 +176,46 @@ void HOGDetector::computeHOGs(const std::vector<cv::Mat>& images, std::vector<cv
     }
 }
 
+void HOGDetector::TestSavedDetector(std::string detectorFilename, std::string testDir, bool show, bool save)
+{
+    mIsTrained = mHOGd.load(detectorFilename);
+    Test(testDir, show, save);
+
+}
+
+void HOGDetector::Test(std::string testDir, bool show, bool save)
+{
+    if(!mIsTrained)
+    {
+        std::cerr << "Cannot test on non trained classifier\n";
+        return;
+    }
+    std::cout << "Testing trained detector...\n";
+    if(testDir.compare(testDir.length()-4, 4, ".mp4") == 0)
+        testVideo(testDir, show, save);
+    else
+        testImages(testDir, show, save);
+}
+
+cv::VideoWriter HOGDetector::GetVideoWriter(cv::VideoCapture& vid)
+{
+    return cv::VideoWriter{"output.avi",
+                cv::VideoWriter::fourcc('M','J','P','G'),
+                vid.get(cv::CAP_PROP_FPS),
+                cv::Size{(int)vid.get(cv::CAP_PROP_FRAME_WIDTH), (int)vid.get(cv::CAP_PROP_FRAME_HEIGHT)}};
+}
+
 void HOGDetector::testVideo(std::string videoName, bool show, bool save)
 {
     if(!mIsTrained)
         return;
     cv::VideoCapture vid;
     vid.open(videoName);
-    auto fps = vid.get(cv::CAP_PROP_FPS);
-    cv::VideoWriter writer{"output.avi",
-                cv::VideoWriter::fourcc('M','J','P','G'),
-                fps,
-                cv::Size{(int)vid.get(cv::CAP_PROP_FRAME_WIDTH), (int)vid.get(cv::CAP_PROP_FRAME_HEIGHT)}};
-    int cnt = 0;
+    cv::VideoWriter writer = GetVideoWriter(vid);
     while(vid.isOpened())
     {
         cv::Mat frame;
         vid >> frame;
-        std::cout << "Wroking on frame: " << cnt++ << std::endl;
         if(frame.data)
             Detect(frame, show);
         else
@@ -214,11 +237,12 @@ void HOGDetector::testImages(std::string dirName, bool show, bool save)
     {
         cv::Mat img = cv::imread(file);
         if(img.data)
+        {
             Detect(img, show);
-        else
-            break;
-        if(save)
-            cv::imwrite(dirName + "detected_", img);
+            if(save)
+                cv::imwrite(dirName + "detected_", img);
+        }
+        else continue;
     }
 }
 
@@ -250,20 +274,6 @@ void HOGDetector::Detect(cv::Mat &image, bool display)
     }
 }
 
-void HOGDetector::Test(std::string testDir, bool show, bool save)
-{
-    if(!mIsTrained)
-    {
-        std::cerr << "Cannot test on non trained classifier\n";
-        return;
-    }
-    std::cout << "Testing trained detector...\n";
-    if(testDir.compare(testDir.length()-4, 4, ".mp4") == 0)
-        testVideo(testDir, show, save);
-    else
-        testImages(testDir, show, save);
-}
-
 void HOGDetector::Save(std::string destFile)
 {
     mHOGd.save(destFile);
@@ -279,11 +289,4 @@ void HOGDetector::SetDefaultPeopleDetector()
 {
     mHOGd.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
     mIsTrained = true;
-}
-
-void HOGDetector::TestSavedDetector(std::string detectorFilename, std::string testDir, bool show, bool save)
-{
-    mIsTrained = mHOGd.load(detectorFilename);
-    Test(testDir, show, save);
-
 }
