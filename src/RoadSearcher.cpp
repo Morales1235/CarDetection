@@ -1,3 +1,6 @@
+#include <thread>
+#include <future>
+
 #include "RoadSearcher.h"
 #include "hogdetector.h"
 
@@ -5,16 +8,16 @@
 
 RoadSearcher::RoadSearcher(std::string carDetectorFile, std::optional<std::string> pedestriantsDetFile)
 {
-    if(!carDetector.Load(carDetectorFile))
+    if(!mDetectors["cars"].Load(carDetectorFile))
         throw(std::string{"Cannot load "} + carDetectorFile);
     if(pedestriantsDetFile)
     {
-        if(!pedestriantsDetector.Load(*pedestriantsDetFile))
+        if(!mDetectors["pedestriants"].Load(*pedestriantsDetFile))
             throw(std::string{"Cannot load "} + *pedestriantsDetFile);
     }
     else
     {
-        pedestriantsDetector.SetDefaultPeopleDetector();
+        mDetectors["pedestriants"].SetDefaultPeopleDetector();
     }
 
 }
@@ -55,15 +58,20 @@ void RoadSearcher::SearchImages(std::string filepath)
         if(img.data)
         {
             ProceedSearching(img);
+            cv::imshow("Detection", img);
+            cv::waitKey(0);
         }
-        cv::imshow("Detection", img);
-        cv::waitKey(0);
     }
 }
 
 
 void RoadSearcher::ProceedSearching(cv::Mat &image)
 {
-    carDetector.Detect(image, false);
-    pedestriantsDetector.Detect(image, false);
+    std::vector<std::future<void>> tasks;
+    for(auto& detector: mDetectors)
+    {
+        tasks.push_back(std::async([&]{detector.second.Detect(image, false);}));
+    }
+    for(auto& task: tasks)
+        task.wait();
 }

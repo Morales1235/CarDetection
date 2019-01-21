@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 #include <opencv2/core/mat.hpp>
 
 #include "hogdetector.h"
@@ -18,6 +20,5 @@ public:
 private:
     void ProceedSearching(cv::Mat& image);
 
-    HOGDetector carDetector;
-    HOGDetector pedestriantsDetector;
+    std::unordered_map<std::string, HOGDetector> mDetectors;
 };
